@@ -1,0 +1,153 @@
+#include <iostream>
+using namespace std;
+
+// Početni broj šibica
+int ukupnoSibica = 21;
+
+// Prikazuje preostale šibice
+void prikaziSibice(int broj) {
+    cout << "\nPreostalo šibica: " << broj << endl;
+    for (int i = 0; i < broj; i++) {
+        cout << "| ";
+    }
+    cout << "\n";
+}
+
+// Unos poteza igrača
+int potezIgraca(int preostalo) {
+    int broj;
+    do {
+        cout << "Uzmi 1, 2 ili 3 šibice: ";
+        cin >> broj;
+    } while (broj < 1 || broj > 3 || broj > preostalo);
+    return broj;
+}
+
+// Minimax strategija
+int minimax(int preostalo, bool kompNaPotezu, bool bizarni) {
+    if (preostalo == 0) {
+        // Kada nema više šibica, proveravamo ko je igrao zadnji
+        if (bizarni == true) {
+            if (kompNaPotezu == true) {
+                return 1;  // Kompjuter izgubio (pošto je igrao poslednji potez)
+            } else {
+                return -1; // Kompjuter pobedio
+            }
+        } else {
+            if (kompNaPotezu == true) {
+                return -1; // Kompjuter izgubio
+            } else {
+                return 1;  // Kompjuter pobedio
+            }
+        }
+    }
+
+    if (kompNaPotezu == true) {
+        int najboljiRezultat = -1000; // vrlo loš početni rezultat
+        for (int i = 1; i <= 3; i++) {
+            if (preostalo >= i) {
+                int rezultat = minimax(preostalo - i, false, bizarni);
+                if (rezultat > najboljiRezultat) {
+                    najboljiRezultat = rezultat;
+                }
+            }
+        }
+        return najboljiRezultat;
+    } else {
+        int najgoriRezultat = 1000; // vrlo dobar početni rezultat
+        for (int i = 1; i <= 3; i++) {
+            if (preostalo >= i) {
+                int rezultat = minimax(preostalo - i, true, bizarni);
+                if (rezultat < najgoriRezultat) {
+                    najgoriRezultat = rezultat;
+                }
+            }
+        }
+        return najgoriRezultat;
+    }
+}
+
+// Kompjuter bira najbolji potez pomoću Minimax
+int potezKompjutera(int preostalo, bool bizarni) {
+    int najboljiPotez = 1;
+    int najboljiRezultat = -1000;
+
+    for (int i = 1; i <= 3; i++) {
+        if (preostalo >= i) {
+            int rezultat = minimax(preostalo - i, false, bizarni);
+            if (rezultat > najboljiRezultat) {
+                najboljiRezultat = rezultat;
+                najboljiPotez = i;
+            }
+        }
+    }
+
+    return najboljiPotez;
+}
+
+// Prikaz pobednika
+void prikaziRezultat(bool igracNaPotezu, bool bizarni) {
+    if (bizarni == true) {
+        if (igracNaPotezu == true) {
+            cout << "\nUzeli ste poslednju šibicu. Izgubili ste (Bizarni NIM).\n";
+        } else {
+            cout << "\nAI je uzeo poslednju šibicu. Vi ste pobedili!\n";
+        }
+    } else {
+        if (igracNaPotezu == true) {
+            cout << "\nUzeli ste poslednju šibicu. Pobedili ste!\n";
+        } else {
+            cout << "\nAI je uzeo poslednju šibicu. AI je pobedio.\n";
+        }
+    }
+}
+
+// Glavni deo programa
+int main() {
+    int preostalo = ukupnoSibica;
+    int izbor;
+    bool bizarni;
+    bool igracNaPotezu;
+
+    cout << "Dobrodošli u igru NIM!\n";
+    cout << "1. Običan NIM (ko uzme poslednju - pobedjuje)\n";
+    cout << "2. Bizarni NIM (ko uzme poslednju - gubi)\n";
+    cout << "Izaberite vrstu igre (1 ili 2): ";
+    cin >> izbor;
+    if (izbor == 2) {
+        bizarni = true;
+    } else {
+        bizarni = false;
+    }
+
+    cout << "Ko igra prvi? (1 - Vi, 2 - AI): ";
+    cin >> izbor;
+    if (izbor == 1) {
+        igracNaPotezu = true;
+    } else {
+        igracNaPotezu = false;
+    }
+
+    while (preostalo > 0) {
+        prikaziSibice(preostalo);
+        int potez;
+
+        if (igracNaPotezu == true) {
+            potez = potezIgraca(preostalo);
+        } else {
+            potez = potezKompjutera(preostalo, bizarni);
+            cout << "AI uzima " << potez << " šibicu/e.\n";
+        }
+
+        preostalo = preostalo - potez;
+
+        if (preostalo == 0) {
+            prikaziRezultat(igracNaPotezu, bizarni);
+            break;
+        }
+
+        igracNaPotezu = !igracNaPotezu;
+    }
+
+    return 0;
+}
